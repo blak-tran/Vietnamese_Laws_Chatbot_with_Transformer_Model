@@ -1,27 +1,15 @@
-# Project Name
+# Vietnamese Chatbot
 
-Brief description of your project.
-
-## Table of Contents
-
-- [Introduction](#introduction)
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
+Transformer Model Training with TensorFlow
 
 ## Introduction
+This project focuses on training a Transformer model using TensorFlow, a powerful deep learning framework. Transformers have proven to be exceptionally effective in natural language processing tasks, making them a popular choice for various applications such as chatbots, language translation, and text generation. In this project, we harness the capabilities of TensorFlow to train a state-of-the-art Transformer model tailored to your specific needs.
 
-Explain what your project does and what problem it solves. Provide a clear and concise overview of its purpose and functionality.
-
-## Features
-
-List the key features of your project. For example:
-- Feature 1: Description of feature 1.
-- Feature 2: Description of feature 2.
-- ...
-
+### Features
+Transformer Architecture: Utilize the advanced Transformer architecture for processing sequential data efficiently.
+TensorFlow Implementation: Leverage the TensorFlow framework to seamlessly build, train, and evaluate the Transformer model.
+Customization: Tailor the Transformer model to your specific task, whether it's chatbot responses, language translation, or any other sequential data task.
+Easy Integration: Easily integrate the trained model into your applications for real-time processing.
 ## Installation
 
 Provide step-by-step instructions on how to install and set up your project. Include any dependencies that need to be installed and any configuration steps. For example:
