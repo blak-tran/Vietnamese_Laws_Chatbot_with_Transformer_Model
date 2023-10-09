@@ -17,4 +17,5 @@ Provide step-by-step instructions on how to install and set up your project. Inc
 ```bash
 git [clone https://github.com/your-username/your-repo.git](https://github.com/blak-tran/vietnamese_chatbot_research.git)https://github.com/blak-tran/vietnamese_chatbot_research.git
 cd vietnamese_chatbot
+pip install tensorflow[and-cuda]
 pip install -r requirements.txt
