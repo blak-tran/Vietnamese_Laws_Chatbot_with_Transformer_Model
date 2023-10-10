@@ -12,7 +12,7 @@ from preprocess_data import preprocessing
 
 
 
-def word_to_vec(questions, answers, RAREWORDS, vector_size=100, window=5, min_count=1, workers=4):
+def word_to_vec(questions, answers, RAREWORDS, vector_size=300, window=5, min_count=1, workers=4):
     # Combine questions and answers into a single list for Word2Vec training
     combined_sentences = questions + answers
     

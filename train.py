@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os, pytz
+os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 from datetime import datetime
 
 import pandas as pd
@@ -14,7 +15,7 @@ from tensorflow.python.keras.callbacks import TensorBoard, ModelCheckpoint
 def parse_args():
     parser = argparse.ArgumentParser(description='Training script for chatbot model.')
     parser.add_argument('--epochs', type=int, default=10000, help='Number of training epochs')
-    parser.add_argument('--batch_size', type=int, default=8, help='Batch size for training')
+    parser.add_argument('--batch_size', type=int, default=2, help='Batch size for training')
     parser.add_argument('--num_layers', type=int, default=2, help='Number of transformer layers')
     parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate for the optimizer')
     parser.add_argument('--dropout', type=float, default=0.1, help='Dropout rate')
@@ -25,6 +26,10 @@ def parse_args():
     parser.add_argument('--save_frequency', type=int, default=500, help="Model checkpoint will be saved every epochs th")
     parser.add_argument('--checkpoint_path', type=str, default=None, help='Path to the pre-trained model checkpoint')
     parser.add_argument('--vector_path', type=str, default="", help='Path to vector file')
+    parser.add_argument('--num_heads', type=int, default=6)
+    parser.add_argument('--units', type=int, default=512)
+    
+    
     return parser.parse_args()
 
 def setup_tpu():
