@@ -15,7 +15,7 @@ Easy Integration: Easily integrate the trained model into your applications for 
 Provide step-by-step instructions on how to install and set up your project. Include any dependencies that need to be installed and any configuration steps. For example:
 
 ```bash
-git [clone https://github.com/your-username/your-repo.git](https://github.com/blak-tran/vietnamese_chatbot_research.git)https://github.com/blak-tran/vietnamese_chatbot_research.git
+git clone https://github.com/blak-tran/vietnamese_chatbot_research.git
 
 cd vietnamese_chatbot
 
