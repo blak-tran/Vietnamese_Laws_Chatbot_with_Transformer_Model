@@ -48,15 +48,15 @@ def remove_rarewords(text, RAREWORDS):
     return " ".join([word for word in str(text).split() if word not in RAREWORDS])
 
 def preprocessing(df, RAREWORDS): 
-  df["user_a"] = df["user_a"].apply(lambda ele: ele.translate(str.maketrans('', '', string.punctuation))) # Remove punctuation
-  df["user_b"] = df["user_b"].apply(lambda ele: ele.translate(str.maketrans('', '', string.punctuation))) 
-  df["user_a"] = df["user_a"].apply(lambda ele: remove_emoticons(ele)) # Remove emoticons
-  df["user_b"] = df["user_b"].apply(lambda ele: remove_emoticons(ele))
-  df["user_a"] = df["user_a"].apply(lambda ele: remove_rarewords(ele, RAREWORDS)) # Remove rarewords
-  df["user_b"] = df["user_b"].apply(lambda ele: remove_rarewords(ele, RAREWORDS))
-  df['user_b'] = df['user_b'].apply(lambda ele: 'START ' + ele + ' END')
-  df["user_a"] = df["user_a"].apply(lambda ele: ele.lower()) # convert text to lowercase
-  df["user_b"] = df["user_b"].apply(lambda ele: ele.lower()) 
+  df["question"] = df["question"].apply(lambda ele: ele.translate(str.maketrans('', '', string.punctuation))) # Remove punctuation
+  df["answers"] = df["answers"].apply(lambda ele: ele.translate(str.maketrans('', '', string.punctuation))) 
+  df["question"] = df["question"].apply(lambda ele: remove_emoticons(ele)) # Remove emoticons
+  df["answers"] = df["answers"].apply(lambda ele: remove_emoticons(ele))
+  df["question"] = df["question"].apply(lambda ele: remove_rarewords(ele, RAREWORDS)) # Remove rarewords
+  df["answers"] = df["answers"].apply(lambda ele: remove_rarewords(ele, RAREWORDS))
+  df['answers'] = df['answers'].apply(lambda ele: 'START ' + ele + ' END')
+  df["question"] = df["question"].apply(lambda ele: ele.lower()) # convert text to lowercase
+  df["answers"] = df["answers"].apply(lambda ele: ele.lower()) 
   
   return df
 
@@ -81,13 +81,13 @@ def decode_input_data(answers, tokenizer):
     return decoder_input_data, maxlen_answers
 
 def data_processing(dataframe):
-    idx = dataframe[dataframe['user_b'].isnull()].index.tolist() # Get index of nan row
-    print('Question of nan answer: ' ,dataframe['user_a'][idx].values)
+    idx = dataframe[dataframe['answers'].isnull()].index.tolist() # Get index of nan row
+    print('Question of nan answer: ' ,dataframe['question'][idx].values)
     # Fill in nan row value
-    dataframe['user_b'] = dataframe['user_b'].fillna('Luật sư').values 
+    dataframe['answers'] = dataframe['answers'].fillna('Luật sư').values 
 
     cnt = Counter()
-    for text in dataframe["user_b"].values:
+    for text in dataframe["answers"].values:
         for word in text.split():
             cnt[word] += 1
 
