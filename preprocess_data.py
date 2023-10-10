@@ -1,13 +1,10 @@
-import pandas as pd
 import numpy as np
-import re,string
+import string
 from gensim.models import KeyedVectors
 from collections import Counter
 from underthesea import word_tokenize
 from tensorflow.keras.preprocessing.text import Tokenizer 
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-import tensorflow as tf
-from tensorflow.keras import preprocessing, utils, activations
 # from keras.callbacks import ModelCheckpoint
 import warnings
 warnings.filterwarnings('ignore')
@@ -80,9 +77,10 @@ def decode_input_data(answers, tokenizer):
     print(decoder_input_data.shape)
     return decoder_input_data, maxlen_answers
 
-def data_processing(dataframe):
-    idx = dataframe[dataframe['answers'].isnull()].index.tolist() # Get index of nan row
-    print('Question of nan answer: ' ,dataframe['question'][idx].values)
+def data_processing(dataframe, vector_path):
+    idx = dataframe[dataframe['answers'].isnull()].index.tolist()  # Get index of nan row
+    print('Question of nan answer: ', dataframe['question'][idx].values)
+    
     # Fill in nan row value
     dataframe['answers'] = dataframe['answers'].fillna('Luật sư').values 
 
@@ -91,12 +89,15 @@ def data_processing(dataframe):
         for word in text.split():
             cnt[word] += 1
 
-    RAREWORDS = set([w for (w, wc) in cnt.most_common()[:-10-1:-1]]) #Get top 10 rare word
+    RAREWORDS = set([w for (w, wc) in cnt.most_common()[:-10-1:-1]])  # Get top 10 rare words
     
     dataframe = preprocessing(dataframe, RAREWORDS)
-    data = dataframe.values #numpy 
-    questions = data[:,1] # convert question to a list
-    answers = data[:,2] # convert answer that match with question to list
+    
+    # Convert DataFrame to NumPy array after preprocessing
+    data = dataframe[['question', 'answers']].values
+    
+    questions = data[:, 0]  # convert question to a list
+    answers = data[:, 1]    # convert answer that match with question to a list
     print(questions[:5]) 
     print(answers[:5])
     
@@ -128,7 +129,7 @@ def data_processing(dataframe):
     decoder_output_data = np.array(padded_answers)
     print(decoder_output_data.shape)
     
-    fastText_model = KeyedVectors.load_word2vec_format('input/wiki-vi-vectors/wiki.vi.vec')
+    fastText_model = KeyedVectors.load_word2vec_format(vector_path)
     print("FastText Loaded!")
     
     embeddings_dim = 300
