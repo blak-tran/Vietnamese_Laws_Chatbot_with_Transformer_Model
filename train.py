@@ -1,14 +1,15 @@
 import argparse
 import logging
+import os, pytz
+from datetime import datetime
+
 import pandas as pd
-import os
 import tensorflow as tf
 from preprocess_data import data_processing
 from models import transformer
 from loss import CustomSchedule, loss_function, accuracy
-from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
+from tensorflow.python.keras.callbacks import TensorBoard, ModelCheckpoint
 
-logging.basicConfig(filename='training.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Training script for chatbot model.')
@@ -20,10 +21,10 @@ def parse_args():
     parser.add_argument('--embedding_dim', type=int, default=300, help='Dimensionality of word embeddings')
     parser.add_argument('--save_dir', type=str, default='./checkpoints', help='Directory to save model checkpoints')
     parser.add_argument('--log_dir', type=str, default='./logs', help='Directory to save training logs')
-    parser.add_argument('--data_file', type=str, default='input/vietnamese-chatbot/d liu chatbot question-answer short style.csv', help='Path to CSV file containing training data')
+    parser.add_argument('--data_file', type=str, default='./input/vietnamese-chatbot/vi-QA.csv', help='Path to CSV file containing training data')
     parser.add_argument('--save_frequency', type=int, default=500, help="Model checkpoint will be saved every epochs th")
     parser.add_argument('--checkpoint_path', type=str, default=None, help='Path to the pre-trained model checkpoint')
-    parser.add_argument('--word2vec', action='store_true', default=True, help='Path to the pre-trained model checkpoint')
+    parser.add_argument('--vector_path', type=str, default="", help='Path to vector file')
     return parser.parse_args()
 
 def setup_tpu():
@@ -81,12 +82,29 @@ def train_model(args, encoder_input_data, decoder_input_data, decoder_output_dat
 
     return history
 
+def get_logger_datetime():
+    # Get the current datetime in UTC
+    current_datetime = datetime.now(pytz.utc)
+
+    # Convert to Vietnamese time zone (Asia/Ho_Chi_Minh)
+    vietnamese_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+    current_datetime_vietnamese = current_datetime.astimezone(vietnamese_tz)
+    
+    logger_datetime = current_datetime_vietnamese.strftime("%Y_%m_%d_%H_%M_%S")
+
+    return logger_datetime
+
 def main():
     args = parse_args()
+    
+    current_datetime = get_logger_datetime()
+    
+    logging.basicConfig(filename=f'{args.log_dir}/{current_datetime}_training.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    
     strategy = setup_tpu()
     dataframe = pd.read_csv(args.data_file)
     
-    encoder_input_data, decoder_input_data, decoder_output_data, maxlen_answers, embedding_matrix, maxlen_questions, VOCAB_SIZE, embeddings_dim = data_processing(dataframe=dataframe)
+    encoder_input_data, decoder_input_data, decoder_output_data, maxlen_answers, embedding_matrix, maxlen_questions, VOCAB_SIZE, embeddings_dim = data_processing(dataframe=dataframe, vector_path=args.vector_path)
     
     train_model(args, encoder_input_data, decoder_input_data, decoder_output_data, maxlen_answers, embedding_matrix, maxlen_questions, VOCAB_SIZE, embeddings_dim)
 
