@@ -26,5 +26,5 @@ pip install -r requirements.txt
 # Retrain the model.
 python train.py --data_file ./input/vietnamese-chatbot/vi-QA.csv \
     --checkpoint_path ./checkpoints/checkpoint_6362.h5 \
---vector_path ./input/wiki-vi-vectors/QA.vi. \
---log_dir ./logs/train
+    --vector_path ./input/wiki-vi-vectors/QA.vi. \
+    --log_dir ./logs/train
