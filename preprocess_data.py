@@ -1,11 +1,11 @@
 import numpy as np
-import string
+import string, math, os
 from gensim.models import KeyedVectors
 from collections import Counter
 from underthesea import word_tokenize
 from tensorflow.keras.preprocessing.text import Tokenizer 
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-# from keras.callbacks import ModelCheckpoint
+import pandas as pd
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -145,3 +145,53 @@ def data_processing(dataframe, vector_path):
     print(embedding_matrix.shape)
     
     return encoder_input_data,decoder_input_data, decoder_output_data,maxlen_answers,embedding_matrix,maxlen_questions, VOCAB_SIZE, embeddings_dim
+
+
+
+def create_batches(data, batch_size=10000):
+    num_batches = math.ceil(len(data) / batch_size)
+    batches = []
+    for i in range(num_batches):
+        start_idx = i * batch_size
+        end_idx = (i + 1) * batch_size
+        batches.append(data[start_idx:end_idx])
+    return batches
+
+def process_data_for_training(dataframe, output_dir):
+    idx = dataframe[dataframe['answers'].isnull()].index.tolist()  # Get index of nan row
+    print('Question of nan answer: ', dataframe['question'][idx].values)
+    
+    # Fill in nan row value
+    dataframe['answers'] = dataframe['answers'].fillna('Luật sư').values 
+
+    cnt = Counter()
+    for text in dataframe["answers"].values:
+        for word in text.split():
+            cnt[word] += 1
+
+    data = dataframe[['question', 'answers']].values
+    
+    questions = data[:, 0]  # convert question to a list
+    answers = data[:, 1]    # convert answer that match with question to a list
+    print(questions[:5]) 
+    print(answers[:5])
+
+    qa_pairs = list(zip(questions, answers))
+    batches = create_batches(qa_pairs, batch_size=6000)
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    for idx, batch in enumerate(batches):
+        output_filename = os.path.join(output_dir, f'qa_batch_{idx}.csv')
+        questions_batch, answers_batch = zip(*batch)
+        df_batch = pd.DataFrame({'question': questions_batch, 'answers': answers_batch})
+        df_batch.to_csv(output_filename, index=False)
+
+    return output_dir
+
+if __name__ == "__main__":
+    dataframe = pd.read_csv("/home/dattran/datadrive/AI-project/vietnamese_chatbot_research/input/vietnamese-chatbot/vi-QA.csv")
+    out_dir = "/home/dattran/datadrive/AI-project/vietnamese_chatbot_research/input/vietnamese-chatbot/mini_batches"
+    output_directory = process_data_for_training(dataframe, out_dir)
+    print(f"Mini-batches created and saved in: {output_directory}")
