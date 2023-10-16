@@ -1,5 +1,4 @@
 import argparse
-import logging
 import os, pytz
 os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 from datetime import datetime
@@ -28,6 +27,7 @@ def parse_args():
     parser.add_argument('--vector_path', type=str, default="", help='Path to vector file')
     parser.add_argument('--num_heads', type=int, default=6)
     parser.add_argument('--units', type=int, default=512)
+    parser.add_argument('--config', type=str, default="./checkpoints/tokenizer.json")
     
     
     return parser.parse_args()
@@ -54,10 +54,18 @@ class CustomModelCheckpoint(Callback):
         if (epoch + 1) % self.save_frequency == 0:
             self.model.save_weights(self.filepath.format(epoch=epoch + 1), overwrite=True)
             print(f"Saved model weights for epoch {epoch + 1}.")
-            
+
+def load_model_weights(checkpoint_path, model):
+    model.load_weights(checkpoint_path)
+    print(f"Loaded checkpoint weights from {checkpoint_path}")
+    return model
+     
 def train_model(checkpoint_name, args, encoder_input_data, decoder_input_data, decoder_output_data, maxlen_answers, embedding_matrix, maxlen_questions, VOCAB_SIZE, embeddings_dim):
     tf.keras.backend.clear_session()
-    strategy = setup_tpu()
+    physical_devices = tf.config.experimental.list_physical_devices('GPU')
+    if len(physical_devices) > 0:
+        tf.config.experimental.set_memory_growth(physical_devices[0], True)
+    
 
     # Define the model
     model = transformer(
@@ -95,9 +103,10 @@ def train_model(checkpoint_name, args, encoder_input_data, decoder_input_data, d
     
     if args.checkpoint_path is not None:
         # Load the checkpoint weights
-        model.load_weights(args.checkpoint_path)
+        model = load_model_weights(args.checkpoint_path, model)
         print(f"Loaded checkpoint weights from {args.checkpoint_path}")
-
+        
+        
     # Training the model with TensorBoard and ModelCheckpoint callbacks
     history = model.fit([encoder_input_data, decoder_input_data], decoder_output_data, batch_size=args.batch_size, epochs=args.epochs, callbacks=[tensorboard_callback, custom_checkpoint_callback])
 
@@ -126,13 +135,17 @@ def main():
     checkpoint_name = f"{current_datetime}_{base_name}"
     dataframe = pd.read_csv(args.data_file)
     
-    encoder_input_data, decoder_input_data, decoder_output_data, maxlen_answers, embedding_matrix, maxlen_questions, VOCAB_SIZE, embeddings_dim = data_processing(dataframe=dataframe, vector_path=args.vector_path)
+    encoder_input_data, decoder_input_data, decoder_output_data, maxlen_answers, embedding_matrix, maxlen_questions, VOCAB_SIZE, embeddings_dim = data_processing(dataframe=dataframe, vector_path=args.vector_path, config=args.config, checkpoint_name=checkpoint_name)
     
     train_model(checkpoint_name, args, encoder_input_data, decoder_input_data, decoder_output_data, maxlen_answers, embedding_matrix, maxlen_questions, VOCAB_SIZE, embeddings_dim)
 
 if __name__ == "__main__":
     main()
 
-# screen -L -Logfile ./logs/training_logs/batch_0.log python train.py --data_file ./input/vietnamese-chatbot/mini_batches/qa_batch_0.csv \
-#     --vector_path ./input/wiki-vi-vectors/wiki.vi.vec \
-#     --log_dir ./logs/batch_0
+# screen -L -Logfile ./logs/training_logs/batch_1.log python train.py --data_file ./input/vietnamese-chatbot/mini_batches/qa_batch_1.csv \
+#   --vector_path ./input/wiki-vi-vectors/wiki.vi.vec \
+#   --epochs 5000 \
+#   --save_frequency 600 \
+#   --log_dir ./logs/batch_1 \
+#   --checkpoint_path ./checkpoints/2023_10_11_11_58_07_qa_batch_0/2023_10_11_11_58_07_qa_batch_0_3600.h5 \
+#   --config ./checkpoints/tokenizer.json
