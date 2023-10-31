@@ -5,3 +5,5 @@ logs/*
 checkpoints/*
 __pycache__/
 research/.ipynb_checkpoints/
+*.log
+transformers/

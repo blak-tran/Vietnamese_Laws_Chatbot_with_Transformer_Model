@@ -1,4 +1,5 @@
 import json, os
+import tensorflow as tf
 from tensorflow.keras.preprocessing.text import Tokenizer, tokenizer_from_json
 
 
@@ -13,7 +14,7 @@ def save_token(tokenizer: Tokenizer, file_name: str = ""):
         f.write(json.dumps(tokenizer_json, ensure_ascii=False))
     print("Tokenizer was saved!! ")
     
-def tokenizer_QA_dataset(questions: list, answers: list, is_saved: bool = False) -> Tokenizer:
+def tokenizer_QA_dataset(questions: list, answers: list, is_saved: bool = False) -> tf.keras.preprocessing.text.Tokenizer:
     tokenizer = Tokenizer()
     tokenizer.fit_on_texts(questions + answers)
     if is_saved:

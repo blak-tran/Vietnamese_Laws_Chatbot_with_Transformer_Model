@@ -1,5 +1,6 @@
 import tensorflow as tf
-
+from torch import nn
+import torch
 def scaled_dot_product_attention(query, key, value, mask):
   """Calculate the attention weights. """
   matmul_qk = tf.matmul(query, key, transpose_b=True)
@@ -306,3 +307,26 @@ def transformer(maxlen_answers,
 
 
   return tf.keras.Model(inputs=[inputs, dec_inputs], outputs=outputs, name=name)
+
+class BERT_Arch(nn.Module):
+    def __init__(self, bert):
+        super(BERT_Arch, self).__init__()
+        self.bert = bert
+
+    def forward(self, input_ids, attention_mask):
+        start_logits = self.bert(input_ids, attention_mask).start_logits
+        end_logits = self.bert(input_ids, attention_mask).end_logits
+        
+        start_indices = []
+        end_indices = []
+        
+        for i in range(start_logits.size(0)):
+          start_idx = start_logits[i].argmax().view(1)
+          end_idx = end_logits[i].argmax().view(1)
+          start_indices.append(start_logits[i].masked_fill(start_logits[i] != start_idx, 0))
+          end_indices.append(end_logits[i].masked_fill(end_logits[i] != end_idx, 0))
+        
+        start_indices = torch.stack(start_indices)
+        end_indices = torch.stack(end_indices)
+        
+        return start_indices, end_indices
