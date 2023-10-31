@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument('--save_dir', type=str, default='./checkpoints', help='Directory to save model checkpoints')
     parser.add_argument('--log_dir', type=str, default='./logs', help='Directory to save training logs')
     parser.add_argument('--data_file', type=str, default='./input/vietnamese-chatbot/vi-QA.csv', help='Path to CSV file containing training data')
-    parser.add_argument('--save_frequency', type=int, default=600, help="Model checkpoint will be saved every epochs th")
+    parser.add_argument('--save_frequency', type=int, default=2, help="Model checkpoint will be saved every epochs th")
     parser.add_argument('--checkpoint_path', type=str, default=None, help='Path to the pre-trained model checkpoint')
     parser.add_argument('--vector_path', type=str, default="", help='Path to vector file')
     parser.add_argument('--num_heads', type=int, default=4)
@@ -43,6 +43,9 @@ def parse_args():
 def train_model(train_dataloader, val_dataloader, model, optimizer, criterion, device, epochs, eval_every):
     model.train()  # Set the model to training mode    
     with torch.autograd.detect_anomaly():
+        # Setup LR scheduler 
+        lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=2)
+        
         for epoch in range(epochs):
             total_loss = 0
             model_qa.train()
@@ -73,45 +76,46 @@ def train_model(train_dataloader, val_dataloader, model, optimizer, criterion, d
             avg_loss = total_loss / len(train_dataloader)
             print(f'Epoch {epoch+1}/{args.epochs}, Loss: {avg_loss:.4f}')
             
-        # Validate every N epochs
-        if epoch % eval_every == 0:
-            # Switch model to evaluation mode
-            model_qa.eval()  
+            # Validate every N epochs
+            if epoch % eval_every == 0:
+                # Switch model to evaluation mode
+                model_qa.eval()  
 
-            total_val_loss = 0
-            val_loop = tqdm(val_dataloader, leave=True)
-            
-            # Disable gradients for validation
-            with torch.no_grad():
-                for val_batch in val_loop:
-                    val_input_ids = val_batch['input_ids'].to(device)
-                    val_attention_mask = val_batch['attention_mask'].to(device)
-                    val_start_positions = val_batch['start_positions'].to(torch.float).to(device)
-                    val_end_positions = val_batch['end_positions'].to(torch.float).to(device)
-
-                    # Forward pass
-                    preds = model_qa(val_input_ids, attention_mask=val_attention_mask)
-                    val_start_logits = preds['start_logits']
-                    val_end_logits = preds['end_logits']
-    
-                    # Compute the loss
-                    val_loss = cal_loss_bert(val_start_logits, val_start_positions, val_end_logits, val_end_positions, criterion)
-
-                    total_val_loss += val_loss.item()
-                    val_loop.set_description(f'Val_Epoch {epoch+1}')
-                    val_loop.set_postfix(val_loss=val_loss.item())
-
-                avg_total_val_loss = total_val_loss / len(val_dataloader)
-                print(f'Val_Epoch {epoch+1}/{args.epochs}, Val_loss: {avg_total_val_loss:.4f}')
-            
-            if epoch % 5 == 0:
-                # Checkpoint file name
-                checkpoint_name = f'model_epoch_{epoch}.pt'
+                total_val_loss = 0
+                val_loop = tqdm(val_dataloader, leave=True)
                 
-                # Save model state_dict
-                torch.save(model.state_dict(), checkpoint_name)
+                # Disable gradients for validation
+                with torch.no_grad():
+                    for val_batch in val_loop:
+                        val_input_ids = val_batch['input_ids'].to(device)
+                        val_attention_mask = val_batch['attention_mask'].to(device)
+                        val_start_positions = val_batch['start_positions'].to(torch.float).to(device)
+                        val_end_positions = val_batch['end_positions'].to(torch.float).to(device)
+
+                        # Forward pass
+                        preds = model_qa(val_input_ids, attention_mask=val_attention_mask)
+                        val_start_logits = preds['start_logits']
+                        val_end_logits = preds['end_logits']
+        
+                        # Compute the loss
+                        val_loss = cal_loss_bert(val_start_logits, val_start_positions, val_end_logits, val_end_positions, criterion)
+                        
+                        total_val_loss += val_loss.item()
+                        val_loop.set_description(f'Val_Epoch {epoch+1}')
+                        val_loop.set_postfix(val_loss=val_loss.item())
+
+                    avg_total_val_loss = total_val_loss / len(val_dataloader)
+                    lr_scheduler.step(avg_total_val_loss)
+                    
+                    print(f'Val_Epoch {epoch+1}/{args.epochs}, Val_loss: {avg_total_val_loss:.4f}')
                 
-                print(f'Checkpoint {checkpoint_name} saved!')
+
+                    checkpoint_name = f'model_epoch_{epoch}.pt'
+                    
+                    # Save model state_dict
+                    torch.save(model.state_dict(), checkpoint_name)
+                    
+                    print(f'Checkpoint {checkpoint_name} saved!')
 
     return model
    
@@ -143,7 +147,7 @@ if __name__ == "__main__":
     model = RobertaForQuestionAnswering.from_pretrained(model_name)
 
     # Load the pre-trained weights for the specific output layers
-    model_qa = RobertaForQuestionAnswering.from_pretrained(model_name, state_dict=model.state_dict())\
+    model_qa = RobertaForQuestionAnswering.from_pretrained(model_name, state_dict=model.state_dict())
 
     # model = BertForQuestionAnswering.from_pretrained("bert-base-uncased")
 
@@ -156,7 +160,7 @@ if __name__ == "__main__":
 
     # Train the model
     epochs = args.epochs  # Number of epochs for training
-    eval_every = 5
+    eval_every = args.save_frequency
     trained_model = train_model(train_dataloader, val_dataloader, model_qa, optimizer, criterion, device, epochs, eval_every)
 
 
