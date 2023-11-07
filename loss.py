@@ -1,6 +1,6 @@
 import tensorflow as tf
 def loss_function(y_true, y_pred):
-  y_true = tf.reshape(y_true, shape=(-1, 44))
+  y_true = tf.reshape(y_true, shape=(-1, 512))
   
   loss = tf.keras.losses.SparseCategoricalCrossentropy(
       from_logits=True, reduction='none')(y_true, y_pred)
@@ -24,5 +24,5 @@ class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
         return tf.math.rsqrt(self.d_model) * tf.math.minimum(arg1, arg2)
     
 def accuracy(y_true, y_pred):
-  y_true = tf.reshape(y_true, shape=(-1, 44))
+  y_true = tf.reshape(y_true, shape=(-1, 512))
   return tf.keras.metrics.sparse_categorical_accuracy(y_true, y_pred)

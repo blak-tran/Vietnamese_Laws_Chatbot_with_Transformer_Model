@@ -78,8 +78,11 @@ def train_model(checkpoint_name, args, encoder_input_data, decoder_input_data, d
         d_model=embeddings_dim,
         num_heads=args.num_heads,
         dropout=args.dropout)
+    
+    model.summary()
 
     learning_rate = CustomSchedule(embeddings_dim)
+
     optimizer = tf.keras.optimizers.Adam(
         learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9)
 
@@ -142,10 +145,9 @@ def main():
 if __name__ == "__main__":
     main()
 
-# screen -L -Logfile ./logs/training_logs/batch_1.log python train.py --data_file ./input/vietnamese-chatbot/mini_batches/qa_batch_1.csv \
-#   --vector_path ./input/wiki-vi-vectors/wiki.vi.vec \
-#   --epochs 5000 \
+
+# screen -L -Logfile ./logs/screen_logs/laws.log python train.py --data_file "/home/dattran/datadrive2/AI-project/vietnamese_chatbot_research/input/vietnamese-chatbot/combined_law.csv" \
+#   --vector_path /home/dattran/datadrive2/AI-project/vietnamese_chatbot_research/input/wiki-vi-vectors/wiki.vi.vec \
+#   --epochs 6000 \
 #   --save_frequency 600 \
-#   --log_dir ./logs/batch_1 \
-#   --checkpoint_path ./checkpoints/2023_10_11_11_58_07_qa_batch_0/2023_10_11_11_58_07_qa_batch_0_3600.h5 \
-#   --config ./checkpoints/tokenizer.json
+#   --log_dir ./logs/laws
