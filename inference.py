@@ -13,7 +13,7 @@ from tokenizer import load_tokenizer_from_json
 
 embeddings_dim = 300
 
-maxlen_answers = 44
+maxlen_answers = 512
 maxlen_questions = 76
 
 # Hyper-parameters
@@ -23,7 +23,7 @@ UNITS = 512
 DROPOUT = 0.1
 
 
-dataframe = pd.read_csv("/home/dattran/datadrive2/AI-project/vietnamese_chatbot_research/input/vietnamese-chatbot/mini_batches/qa_batch_0.csv")
+dataframe = pd.read_csv("input/vietnamese-chatbot/combined_law.csv")
 idx = dataframe[dataframe['answer'].isnull()].index.tolist()  # Get index of nan row
 print('Question of nan answer: ', dataframe['question'][idx].values)
 
@@ -38,6 +38,7 @@ for text in dataframe["answer"].values:
 RAREWORDS = set([w for (w, wc) in cnt.most_common()[:-10-1:-1]])  # Get top 10 rare words
 
 dataframe = preprocessing(dataframe, RAREWORDS)
+dataframe = dataframe[:1000]
 
 # Convert DataFrame to NumPy array after preprocessing
 data = dataframe.values #numpy 
@@ -65,7 +66,8 @@ VOCAB_SIZE = len(tokenizer.word_index) + 2
 
 embedding_matrix = np.zeros((VOCAB_SIZE, embeddings_dim))
 
-fastText_model = KeyedVectors.load_word2vec_format("/home/dattran/datadrive2/AI-project/vietnamese_chatbot_research/input/wiki-vi-vectors/wiki.vi.vec")
+fastText_model = KeyedVectors.load_word2vec_format(
+    "input/wiki-vi-vectors/wiki.vi.vec")
 print("FastText Loaded!")
 for word, index in word2idx.items():
     try:
@@ -89,7 +91,7 @@ model = transformer(
     dropout=DROPOUT)
 
 
-model.load_weights('/home/dattran/datadrive2/AI-project/vietnamese_chatbot_research/old_checkpoint_chatbot/2023_10_11_11_58_07_qa_batch_0/2023_10_11_11_58_07_qa_batch_0_3600.h5')
+model.load_weights('2023_11_07_09_58_25_combined_law_1800.h5')
 
 # Check the loaded model architecture
 model.summary()
