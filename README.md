@@ -49,9 +49,9 @@ You can download the pretrained Transformer model for the Vietnamese Laws Chatbo
 ### Epoch Loss
 ![Epoch Loss](assets/loss.png)
 
+## Train
 
 ```bash
-# Train script 
 python train.py --data_file your/dataset/path \
   --vector_path wiki/vector/path \
   --epochs your/epochs \
