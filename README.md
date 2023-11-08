@@ -38,6 +38,18 @@ You can download the pretrained Transformer model for the Vietnamese Laws Chatbo
 
 [Download Pretrained Model](https://drive.google.com/drive/folders/1ym6IEKV8b1q7InmwzCMCDimior3ABIdj?usp=sharing)
 
+## Pretrained Model Results
+
+### Epoch Accuracy
+![Epoch Accuracy](training_metrics.png)
+
+### Epoch Learning Rate
+![Epoch Learning Rate](training_metrics.png)
+
+### Epoch Loss
+![Epoch Loss](training_metrics.png)
+
+
 ```bash
 # Train script 
 python train.py --data_file your/dataset/path \
