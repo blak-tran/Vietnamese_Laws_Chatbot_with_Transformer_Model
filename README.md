@@ -10,6 +10,12 @@ Transformer Architecture: Utilize the advanced Transformer architecture for proc
 TensorFlow Implementation: Leverage the TensorFlow framework to seamlessly build, train, and evaluate the Transformer model.
 Customization: Tailor the Transformer model to your specific task, whether it's chatbot responses, language translation, or any other sequential data task.
 Easy Integration: Easily integrate the trained model into your applications for real-time processing.
+
+## Download dataset
+You can download the dataset from the following link:
+
+[Download Dataset](https://drive.google.com/drive/folders/1jMmkgAQ9QeSV4eLlzmkxBtftLpmDMOel?usp=sharing)
+
 ## Installation
 
 Provide step-by-step instructions on how to install and set up your project. Include any dependencies that need to be installed and any configuration steps. For example:
@@ -28,3 +34,6 @@ python train.py --data_file ./input/vietnamese-chatbot/vi-QA.csv \
     --checkpoint_path ./checkpoints/checkpoint_6362.h5 \
     --vector_path ./input/wiki-vi-vectors/QA.vi. \
     --log_dir ./logs/train
+```
+
+
