@@ -41,13 +41,13 @@ You can download the pretrained Transformer model for the Vietnamese Laws Chatbo
 ## Pretrained Model Results
 
 ### Epoch Accuracy
-![Epoch Accuracy](training_metrics.png)
+![Epoch Accuracy](assets/accuracy.png)
 
 ### Epoch Learning Rate
-![Epoch Learning Rate](training_metrics.png)
+![Epoch Learning Rate](assets/learning_rate.png)
 
 ### Epoch Loss
-![Epoch Loss](training_metrics.png)
+![Epoch Loss](assets/loss.png)
 
 
 ```bash
